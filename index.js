@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+
+const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
+
 const port  = process.env.PORT || 5000;
 
 const cors = require('cors');
@@ -20,6 +22,7 @@ async function run() {
     try{
         await client.connect();
         const toolCollection = client.db("StoreTekh").collection("tools");
+        const orderCollection = client.db('StoreTekh').collection('orders')
 
          // set server  and get client all data 
          app.get('/tools', async (req, res)=>{
@@ -31,12 +34,19 @@ async function run() {
 
         // click this button and it get client by it's id
           // get data and  detail info 
-          app.get('/item/:id', async (req, res)=>{
+          app.get('/tool/:id', async (req, res)=>{
             const id = req.params.id;
             const query = {_id: ObjectId(id)};
             const tool = await toolCollection.findOne(query);
             res.send(tool);
         }) 
+
+        // post data in orders 
+        app.post('/addorder', async (req, res) =>{
+            const orders = req.body;
+            const result = await orderCollection.insertOne(orders);
+            res.send(result)
+        })
     }
     finally{
 
