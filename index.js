@@ -43,12 +43,7 @@ async function run() {
         }) 
 
         // post data in orders 
-        app.post('/addorder', async (req, res) =>{
-            const orders = req.body;
-            const result = await orderCollection.insertOne(orders);
-            res.send(result);
-        });
-            // put 
+      // put 
 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
