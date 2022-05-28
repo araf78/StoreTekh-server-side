@@ -22,7 +22,8 @@ async function run() {
     try{
         await client.connect();
         const toolCollection = client.db("StoreTekh").collection("tools");
-        const orderCollection = client.db('StoreTekh').collection('orders')
+        const orderCollection = client.db('StoreTekh').collection('orders');
+        const userCollection = client.db('StoreTekh').collection('users');
 
          // set server  and get client all data 
          app.get('/tools', async (req, res)=>{
@@ -45,8 +46,21 @@ async function run() {
         app.post('/addorder', async (req, res) =>{
             const orders = req.body;
             const result = await orderCollection.insertOne(orders);
-            res.send(result)
-        })
+            res.send(result);
+        });
+            // put 
+
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+              $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result );
+          });
     }
     finally{
 
