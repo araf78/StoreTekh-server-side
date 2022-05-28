@@ -9,7 +9,7 @@ const cors = require('cors');
 require('dotenv').config();
 app.use(express.json());
 
- app.use(cors());
+ 
 app.use(express.json());
 // dbuser78
 // yYaY7G3raA1sNFEe
