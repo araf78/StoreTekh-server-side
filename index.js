@@ -24,6 +24,7 @@ async function run() {
         const toolCollection = client.db("StoreTekh").collection("tools");
         const orderCollection = client.db('StoreTekh').collection('orders');
         const userCollection = client.db('StoreTekh').collection('users');
+        const reviewCollection = client.db('StoreTekh').collection('reviews');
 
          // set server  and get client all data 
          app.get('/tools', async (req, res)=>{
@@ -42,10 +43,24 @@ async function run() {
             res.send(tool);
         }) 
 
+        app.get('/orders', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const orders = await orderCollection.find(query).toArray();
+            return res.send(orders);
+            
+          });
+
         // post data in orders 
-        app.post('/addorder', async (req, res) =>{
+        app.post('/order', async (req, res) =>{
             const orders = req.body;
             const result = await orderCollection.insertOne(orders);
+            res.send(result);
+        });
+        // post data in reviews 
+        app.post('/review', async (req, res) =>{
+            const reviews = req.body;
+            const result = await reviewCollection.insertOne(reviews);
             res.send(result);
         });
             // put 
