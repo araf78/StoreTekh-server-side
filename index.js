@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-
+const jwt = require('jsonwebtoken');
 const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
 
 const port  = process.env.PORT || 5000;
@@ -18,6 +18,21 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).send({ message: 'UnAuthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+      if (err) {
+        return res.status(403).send({ message: 'Forbidden access' })
+      }
+      req.decoded = decoded;
+      next();
+    });
+  }
+
 async function run() {
     try{
         await client.connect();
@@ -33,6 +48,12 @@ async function run() {
             const tools = await cursor.toArray();
             res.send(tools)
         });
+         app.get('/user', async (req, res)=>{
+            const query = {};
+            const cursor = userCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users)
+        });
 
         // click this button and it get client by it's id
           // get data and  detail info 
@@ -43,11 +64,17 @@ async function run() {
             res.send(tool);
         }) 
 
-        app.get('/orders', async (req, res) => {
+        app.get('/orders', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            const query = { email: email };
-            const orders = await orderCollection.find(query).toArray();
-            return res.send(orders);
+            const decodedEmail = req.decoded.email;
+            if(email === decodedEmail){
+                const query = { email: email };
+                const orders = await orderCollection.find(query).toArray();
+                return res.send(orders);
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden access' });
+              }
             
           });
 
@@ -63,8 +90,14 @@ async function run() {
             const result = await reviewCollection.insertOne(reviews);
             res.send(result);
         });
-            // put 
 
+        // all users load 
+        // app.get('/user', (req, res) =>{
+        //   const users = userCollection.find().toArray();
+        //   res.send(users)
+        // })
+
+            // put 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -74,7 +107,8 @@ async function run() {
               $set: user,
             };
             const result = await userCollection.updateOne( filter, updateDoc, options);
-            res.send(result );
+            const token = jwt.sign({email : email}, process.env.ACCESS_TOKEN_SECRET,  { expiresIn: 60 * 60 })
+            res.send({result, token} );
           });
     }
     finally{
