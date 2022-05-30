@@ -40,6 +40,7 @@ async function run() {
         const orderCollection = client.db('StoreTekh').collection('orders');
         const userCollection = client.db('StoreTekh').collection('users');
         const reviewCollection = client.db('StoreTekh').collection('reviews');
+        const myProfileCollection = client.db('StoreTekh').collection('myprofile');
 
          // set server  and get client all data 
          app.get('/tools', async (req, res)=>{
@@ -47,6 +48,18 @@ async function run() {
             const cursor = toolCollection.find(query);
             const tools = await cursor.toArray();
             res.send(tools)
+        });
+         app.get('/review', async (req, res)=>{
+            const query = {};
+            const cursor = reviewCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews)
+        });
+         app.get('/myprofile', async (req, res)=>{
+            const query = {};
+            const cursor = myProfileCollection.find(query);
+            const myProfile = await cursor.toArray();
+            res.send(myProfile)
         });
          app.get('/user', async (req, res)=>{
             const query = {};
@@ -88,6 +101,11 @@ async function run() {
         app.post('/review', async (req, res) =>{
             const reviews = req.body;
             const result = await reviewCollection.insertOne(reviews);
+            res.send(result);
+        });
+        app.post('/myprofile', async (req, res) =>{
+            const myProfile = req.body;
+            const result = await myProfileCollection.insertOne(myProfile);
             res.send(result);
         });
 
